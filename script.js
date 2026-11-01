@@ -8,6 +8,9 @@ const CELL = 20;                       // dimensione di una cella in pixel
 const COLS = canvas.width / CELL;      // 20 colonne
 const ROWS = canvas.height / CELL;     // 20 righe
 
+// true su telefono e tablet (schermo touch)
+const isTouch = window.matchMedia("(pointer: coarse)").matches;
+
 const START_SPEED = 200;               // millisecondi tra un movimento e l'altro all'inizio
 const MIN_SPEED = 80;                  // il serpente non va più veloce di così
 const SPEED_STEP = 6;                  // quanto accelera ogni volta che mangia
@@ -150,7 +153,11 @@ function drawGameOver() {
 
   ctx.fillStyle = "#94a3b8";
   ctx.font = "16px system-ui, sans-serif";
-  ctx.fillText("Premi Invio per ricominciare", canvas.width / 2, canvas.height / 2 + 70);
+  ctx.fillText(
+    isTouch ? "Tocca per ricominciare" : "Premi Invio per ricominciare",
+    canvas.width / 2,
+    canvas.height / 2 + 70
+  );
 }
 
 // ===== Movimento =====
@@ -211,18 +218,76 @@ function endGame() {
 }
 
 // ===== Comandi =====
-document.addEventListener("keydown", (e) => {
+// cambia direzione: dx/dy sono -1, 0 oppure 1
+function turn(dx, dy) {
   // non si può invertire la marcia di colpo (andare a sinistra se vai a destra)
-  if (e.key === "ArrowUp" && direction.y === 0) nextDirection = { x: 0, y: -1 };
-  if (e.key === "ArrowDown" && direction.y === 0) nextDirection = { x: 0, y: 1 };
-  if (e.key === "ArrowLeft" && direction.x === 0) nextDirection = { x: -1, y: 0 };
-  if (e.key === "ArrowRight" && direction.x === 0) nextDirection = { x: 1, y: 0 };
+  if (dx !== 0 && direction.x === 0) nextDirection = { x: dx, y: 0 };
+  if (dy !== 0 && direction.y === 0) nextDirection = { x: 0, y: dy };
+}
+
+// tastiera
+const KEYS = {
+  ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0],
+  w: [0, -1], s: [0, 1], a: [-1, 0], d: [1, 0],
+};
+
+document.addEventListener("keydown", (e) => {
+  const move = KEYS[e.key];
+  if (move) turn(move[0], move[1]);
 
   // a fine partita, Invio fa ripartire il gioco
   if (e.key === "Enter" && gameOver) resetGame();
 
   // evita che le frecce facciano scorrere la pagina
   if (e.key.startsWith("Arrow")) e.preventDefault();
+});
+
+// tasti a schermo (telefono)
+document.querySelectorAll(".pad button").forEach((btn) => {
+  btn.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    turn(Number(btn.dataset.dx), Number(btn.dataset.dy));
+  });
+});
+
+// scorrimento del dito sul campo
+let touchStart = null;
+let swiped = false;
+
+canvas.addEventListener("touchstart", (e) => {
+  const t = e.touches[0];
+  touchStart = { x: t.clientX, y: t.clientY };
+  swiped = false;
+  e.preventDefault();
+}, { passive: false });
+
+canvas.addEventListener("touchmove", (e) => {
+  if (!touchStart) return;
+  const t = e.touches[0];
+  const dx = t.clientX - touchStart.x;
+  const dy = t.clientY - touchStart.y;
+
+  // aspetta che il dito si sia spostato abbastanza (24 pixel)
+  if (Math.max(Math.abs(dx), Math.abs(dy)) < 24) return;
+
+  // vince l'asse in cui il dito si è spostato di più
+  if (Math.abs(dx) > Math.abs(dy)) turn(dx > 0 ? 1 : -1, 0);
+  else turn(0, dy > 0 ? 1 : -1);
+
+  swiped = true;
+  touchStart = { x: t.clientX, y: t.clientY };  // si può scorrere di nuovo senza alzare il dito
+  e.preventDefault();
+}, { passive: false });
+
+canvas.addEventListener("touchend", () => {
+  // un tocco semplice (senza scorrere) a fine partita fa ripartire il gioco
+  if (!swiped && gameOver) resetGame();
+  touchStart = null;
+});
+
+// clic del mouse a fine partita
+canvas.addEventListener("click", () => {
+  if (gameOver) resetGame();
 });
 
 // ===== Ciclo di gioco =====

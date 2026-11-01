@@ -14,7 +14,16 @@
       <span>Record: <strong id="best">0</strong></span>
     </div>
     <canvas id="board" width="400" height="400"></canvas>
-    <p class="hint">Usa le frecce per muoverti</p>
+    <div class="pad" aria-label="Controlli">
+      <button type="button" data-dx="0" data-dy="-1" class="up" aria-label="Su">&#9650;</button>
+      <button type="button" data-dx="-1" data-dy="0" class="left" aria-label="Sinistra">&#9664;</button>
+      <button type="button" data-dx="0" data-dy="1" class="down" aria-label="Giù">&#9660;</button>
+      <button type="button" data-dx="1" data-dy="0" class="right" aria-label="Destra">&#9654;</button>
+    </div>
+    <p class="hint">
+      <span class="hint-key">Usa le frecce per muoverti</span>
+      <span class="hint-touch">Scorri il dito sul campo o usa i tasti</span>
+    </p>
   </main>
 
   <script src="script.js"></script>
