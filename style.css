@@ -59,7 +59,6 @@ canvas {
   display: block;
   width: 100%;
   height: auto;
-  touch-action: none;           /* lo scorrimento del dito non muove la pagina */
   border: 3px solid #4ade80;
   border-radius: 10px;
   box-shadow: 0 0 25px rgba(74, 222, 128, 0.25);
@@ -71,51 +70,42 @@ canvas {
   opacity: 0.6;
 }
 
-/* ---------- Controlli touch (telefono e tablet) ---------- */
+canvas {
+  touch-action: none;
+}
+
 .pad {
-  display: none;
+  display: grid;
   grid-template-columns: repeat(3, 64px);
-  grid-template-rows: repeat(2, 64px);
+  grid-template-areas:
+    ". up ."
+    "left down right";
   gap: 8px;
   justify-content: center;
   margin-top: 1rem;
 }
 
 .pad button {
-  font-size: 1.5rem;
+  height: 56px;
+  font-size: 1.4rem;
   color: #4ade80;
   background: #0f172a;
   border: 1px solid rgba(148, 163, 184, 0.3);
-  border-radius: 16px;
+  border-radius: 12px;
   touch-action: manipulation;
-  user-select: none;
-  -webkit-user-select: none;
   -webkit-tap-highlight-color: transparent;
 }
 
 .pad button:active {
   background: #1e293b;
-  transform: scale(0.95);
 }
 
-.pad .up    { grid-column: 2; grid-row: 1; }
-.pad .left  { grid-column: 1; grid-row: 2; }
-.pad .down  { grid-column: 2; grid-row: 2; }
-.pad .right { grid-column: 3; grid-row: 2; }
+.pad [data-dir="up"] { grid-area: up; }
+.pad [data-dir="left"] { grid-area: left; }
+.pad [data-dir="down"] { grid-area: down; }
+.pad [data-dir="right"] { grid-area: right; }
 
-.hint-touch { display: none; }
-
-@media (pointer: coarse) {
-  .pad { display: grid; }
-  .hint-key { display: none; }
-  .hint-touch { display: inline; }
-}
-
-@media (max-width: 480px) {
-  body { padding: 8px; }
-  .game { padding: 14px; }
-  h1 { font-size: 2rem; margin-bottom: 0.6rem; }
-  .scoreboard { margin-bottom: 0.6rem; }
-  .pad { margin-top: 0.7rem; }
-  .hint { margin-top: 0.6rem; }
+/* i pulsanti servono solo sui dispositivi touch */
+@media (hover: hover) and (pointer: fine) {
+  .pad { display: none; }
 }
